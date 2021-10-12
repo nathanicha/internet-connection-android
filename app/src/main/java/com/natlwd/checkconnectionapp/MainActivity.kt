@@ -1,14 +1,10 @@
 package com.natlwd.checkconnectionapp
 
-import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkRequest
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.AttributeSet
-import android.view.View
 import androidx.activity.viewModels
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.natlwd.checkconnectionapp.databinding.ActivityMainBinding
@@ -17,7 +13,6 @@ class MainActivity : AppCompatActivity(), ConnectionCallback.ConnectionCallbackL
 
     private lateinit var binding: ActivityMainBinding
     private val model: MainViewModel by viewModels()
-    private var connectionCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +20,6 @@ class MainActivity : AppCompatActivity(), ConnectionCallback.ConnectionCallbackL
         val view = binding.root
         setContentView(view)
 
-        connectionCallback = ConnectionCallback()
         ConnectionCallback.listener = this
         setupObserve()
     }
@@ -41,13 +35,45 @@ class MainActivity : AppCompatActivity(), ConnectionCallback.ConnectionCallbackL
     }
 
     private fun setupObserve() {
+        //First Solution
         model.getConnectionState().observe(this, Observer<Boolean> { isConnecting ->
             if (isConnecting) {
-                binding.tv.text = "Connection is available"
-                binding.tv.setTextColor(ContextCompat.getColor(this, R.color.teal_200))
+                binding.firstConnectionTv.text = "Connection is available"
+                binding.firstConnectionTv.setTextColor(
+                    ContextCompat.getColor(
+                        this,
+                        android.R.color.holo_green_light
+                    )
+                )
             } else {
-                binding.tv.text = "Connection is unavailable"
-                binding.tv.setTextColor(ContextCompat.getColor(this, R.color.dark_red))
+                binding.firstConnectionTv.text = "Connection is unavailable"
+                binding.firstConnectionTv.setTextColor(
+                    ContextCompat.getColor(
+                        this,
+                        R.color.dark_red
+                    )
+                )
+            }
+        })
+
+        //Second Solution
+        ConnectionLiveData(this).observe(this, Observer<Boolean> { isConnecting ->
+            if (isConnecting) {
+                binding.secondConnectionTv.text = "Connection is available"
+                binding.secondConnectionTv.setTextColor(
+                    ContextCompat.getColor(
+                        this,
+                        android.R.color.holo_green_light
+                    )
+                )
+            } else {
+                binding.secondConnectionTv.text = "Connection is unavailable"
+                binding.secondConnectionTv.setTextColor(
+                    ContextCompat.getColor(
+                        this,
+                        R.color.dark_red
+                    )
+                )
             }
         })
     }
@@ -56,7 +82,7 @@ class MainActivity : AppCompatActivity(), ConnectionCallback.ConnectionCallbackL
         val connectivityManager: ConnectivityManager =
             application.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        connectionCallback?.let {
+        ConnectionCallback.let {
             connectivityManager.registerNetworkCallback(
                 NetworkRequest.Builder().build(),
                 it
@@ -67,7 +93,7 @@ class MainActivity : AppCompatActivity(), ConnectionCallback.ConnectionCallbackL
     private fun stopConnectionCallback() {
         val connectivityManager: ConnectivityManager =
             application.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectionCallback?.let {
+        ConnectionCallback.let {
             connectivityManager.unregisterNetworkCallback(it)
         }
     }

@@ -3,7 +3,9 @@ package com.natlwd.checkconnectionapp
 import android.net.ConnectivityManager
 import android.net.Network
 
-class ConnectionCallback : ConnectivityManager.NetworkCallback() {
+object ConnectionCallback : ConnectivityManager.NetworkCallback() {
+
+    var listener: ConnectionCallbackListener? = null
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
@@ -19,9 +21,5 @@ class ConnectionCallback : ConnectivityManager.NetworkCallback() {
 
     interface ConnectionCallbackListener {
         fun onConnectionChanged(isConnecting: Boolean)
-    }
-
-    companion object {
-        var listener: ConnectionCallbackListener? = null
     }
 }
